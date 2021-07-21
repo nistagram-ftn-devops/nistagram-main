@@ -39,6 +39,37 @@ services:
     networks:
       - backend
 
+  post-service-mysql:
+    image: mysql:5.6.27
+    ports:
+      - 3307:3306
+    volumes:
+      - post_service_mysqldata:/var/lib/mysql
+      - ./resources/initdb_post_service:/docker-entrypoint-initdb.d
+    container_name: mysql-nistagram-post-service
+    environment:
+        MYSQL_ROOT_PASSWORD: root
+    networks:
+      - backend
+
+  post-service:
+    depends_on: 
+      - post-service-mysql
+      - prometheus
+    # image: borisns/nistagram-post-service
+    build:
+      context: ../nistagram-post-service
+      dockerfile: Dockerfile
+    environment: 
+      - DATABASE_HOST=post-service-mysql
+      - DATABASE_PORT="3307"
+      - DATABASE_USERNAME=root
+      - DATABASE_PASSWORD=root
+    ports:
+      - 9001:3000
+    networks:
+      - backend
+
   user-service-mysql:
     image: mysql:5.6.27
     ports:
@@ -69,32 +100,6 @@ services:
       - 9002:3000
     networks:
       - backend
-
-  # post-service-mysql:
-  #   image: mysql:5.6.27
-  #   ports:
-  #     - 3307:3306
-  #   volumes:
-  #     - post_service_mysqldata:/var/lib/mysql
-  #     # - ./resources/initdb_media_service:/docker-entrypoint-initdb.d
-  #   container_name: mysql-nistagram-post-service
-  #   environment:
-  #       MYSQL_ROOT_PASSWORD: root
-  #   networks:
-  #     - backend
-
-  # post-service:
-  #   depends_on: 
-  #     - post-service-mysql
-  #     - prometheus
-  #   # image: borisns/nistagram-post-service
-  #   build:
-  #     context: ../nistagram-post-service
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - 9001:3000
-  #   networks:
-  #     - backend
 
   prometheus:
     image: prom/prometheus
@@ -137,8 +142,8 @@ networks:
 volumes:
   media_service_mysqldata:
     driver: local
-  # post_service_mysqldata:
-  #   driver: local
+  post_service_mysqldata:
+    driver: local
   user_service_mysqldata:
     driver: local
     
