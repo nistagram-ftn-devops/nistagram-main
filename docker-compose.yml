@@ -101,6 +101,37 @@ services:
     networks:
       - backend
 
+  campaign-service-mysql:
+    image: mysql:5.6.27
+    ports:
+      - 3309:3306
+    volumes:
+      - campaign_service_mysqldata:/var/lib/mysql
+      - ./resources/initdb_campaign_service:/docker-entrypoint-initdb.d
+    container_name: mysql-nistagram-campaign-service
+    environment:
+        MYSQL_ROOT_PASSWORD: root
+    networks:
+      - backend
+
+  campaign-service:
+    depends_on:
+      - campaign-service-mysql
+      - prometheus
+    # image: borisns/nistagram-campaign-service
+    build:
+      context: ../nistagram-campaign-service
+      dockerfile: Dockerfile
+    environment: 
+      - DATABASE_HOST=campaign-service-mysql
+      - DATABASE_PORT="3309"
+      - DATABASE_USERNAME=root
+      - DATABASE_PASSWORD=root
+    ports:
+      - 9004:3000
+    networks:
+      - backend
+
   prometheus:
     image: prom/prometheus
     container_name: prometheus
@@ -145,5 +176,7 @@ volumes:
   post_service_mysqldata:
     driver: local
   user_service_mysqldata:
+    driver: local
+  campaign_service_mysqldata:
     driver: local
     
