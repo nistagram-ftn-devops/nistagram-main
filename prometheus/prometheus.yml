@@ -9,12 +9,28 @@
 
       # metrics_path defaults to '/metrics'
       # scheme defaults to 'http'.
-
       static_configs:
         - targets: ['localhost:9090']
-    - job_name: 'app'
+
+    # - job_name: 'app'
+    #   static_configs:
+    #     - targets: ['app:8080']
+
+    - job_name: 'media-service'
       static_configs:
-        - targets: ['app:8080']
+        - targets: ['media-service:9000']
+
+    - job_name: 'post-service'
+      static_configs:
+        - targets: ['post-service:9001']
+
+    - job_name: 'user-service'
+      static_configs:
+        - targets: ['user-service:9002']
+
+    - job_name: 'campaign-service'
+      static_configs:
+        - targets: ['campaign-service:9004']
 
     - job_name: 'node_exporter'
       static_configs:
